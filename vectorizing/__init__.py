@@ -36,7 +36,7 @@ def process_binary(img):
     return solver.solve()
 
 def process_color(img, color_count, timer):
-    solver = ColorSolver(img, color_count)
+    solver = ColorSolver(img, color_count, timer)
     return solver.solve()
 
 def validate_args(args):

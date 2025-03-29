@@ -73,7 +73,12 @@ def try_read_image_from_url(url):
         # Check if the response is an image
         content_type = resp.headers.get('content-type', '').lower()
         if not content_type.startswith('image/'):
-            raise URLReadError()
+            # Try to detect image format from content
+            try:
+                img = Image.open(BytesIO(resp.content))
+                return convert_RGB_A(img)
+            except:
+                raise URLReadError()
             
         img = Image.open(BytesIO(resp.content))
     except requests.exceptions.RequestException:
