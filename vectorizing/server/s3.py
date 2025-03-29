@@ -1,16 +1,25 @@
 import cuid
 import boto3
 
-S3 = boto3.client("s3", region_name="eu-central-1")
+WASABI_ACCESS_KEY = 'R1IPU38BPZ8L1XZBUBR9'
+WASABI_SECRET_KEY = 'kUyAfKBNWVwpTg6Bu036CYWqUiNhhEbtjVy3KOwc'
+WASABI_ENDPOINT = 's3.us-west-1.wasabisys.com' 
 
-def upload_markup (markup, s3_bucket_name):
+S3 = boto3.client(
+    's3',
+    aws_access_key_id=WASABI_ACCESS_KEY,
+    aws_secret_access_key=WASABI_SECRET_KEY,
+    endpoint_url=f'https://{WASABI_ENDPOINT}',
+)
+
+def upload_markup(markup, s3_bucket_name):
     cuid_str = cuid.cuid()
 
     S3.put_object(
-        Body = markup.encode('utf-8'),
-        Bucket = s3_bucket_name,
-        Key = cuid_str,
-        ContentType = "image/svg+xml",
+        Body=markup.encode('utf-8'),
+        Bucket=s3_bucket_name,
+        Key=cuid_str,
+        ContentType="image/svg+xml",
     )
 
     return cuid_str
@@ -22,7 +31,7 @@ def get_object_url(s3_file_key, s3_bucket_name):
             Bucket=s3_bucket_name
         )
 
-    except(Exception):
+    except Exception:
         return None
 
     return S3.generate_presigned_url(
