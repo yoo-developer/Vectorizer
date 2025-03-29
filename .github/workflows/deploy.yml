@@ -12,4 +12,6 @@ jobs:
     uses: ./.github/workflows/helpers-deploy-argo.yaml
     secrets:
       GH_PAT: ${{ secrets.GH_PAT }}
-      ECR_ROLE_ARN: ${{ github.ref == 'refs/heads/production' && secrets.PRODUCTION_ECR_ROLE_ARN || secrets.STAGING_ECR_ROLE_ARN }}
+      WASABI_ACCESS_KEY: ${{ github.ref == 'refs/heads/production' && secrets.PRODUCTION_WASABI_ACCESS_KEY || secrets.STAGING_WASABI_ACCESS_KEY }}
+      WASABI_SECRET_KEY: ${{ github.ref == 'refs/heads/production' && secrets.PRODUCTION_WASABI_SECRET_KEY || secrets.STAGING_WASABI_SECRET_KEY }}
+      WASABI_REGION: ${{ github.ref == 'refs/heads/production' && secrets.PRODUCTION_WASABI_REGION || secrets.STAGING_WASABI_REGION }}
