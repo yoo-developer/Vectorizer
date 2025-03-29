@@ -7,7 +7,7 @@ from vectorizing.server.timer import Timer
 from vectorizing.server.logs import setup_logs
 from vectorizing.server.s3 import upload_markup
 from vectorizing.svg.markup import create_markup
-from vectorizing.util.read import try_read_image_from_url
+from vectorizing.util.read import try_read_image
 from vectorizing.server.env import get_required, get_optional
 from vectorizing.solvers.color.ColorSolver import ColorSolver
 from vectorizing.solvers.binary.BinarySolver import BinarySolver
@@ -36,39 +36,41 @@ def process_binary(img):
     return solver.solve()
 
 def process_color(img, color_count, timer):
-    solver = ColorSolver(img, color_count, timer)
+    solver = ColorSolver(img, color_count)
     return solver.solve()
 
 def validate_args(args):
-    if not 'url' in args:
-        return False
+    if not args:
+        return None
+
+    url = args.get('url')
+    if not url:
+        return None
 
     solver = args.get('solver', DEFAULT_SOLVER)
-    if not solver in SOLVERS:
-        return False
+    if solver not in SOLVERS:
+        return None
 
-    box = args.get('crop_box')
-    if box:
-        if len(box) != 4:
-            return False
+    color_count = args.get('color_count', 8)
+    if solver == 1 and (color_count < 2 or color_count > 32):
+        return None
 
-        only_numbers = all([isinstance(item, int) for item in box])
-        if not only_numbers:
-            return False
+    raw = args.get('raw', False)
+    crop_box = args.get('crop_box')
 
     return SimpleNamespace(
-        crop_box = box,
-        solver = solver,
-        url = args.get('url'),
-        raw = args.get('raw'),
-        color_count = args.get('color_count'),
+        url=url,
+        solver=solver,
+        color_count=color_count,
+        raw=raw,
+        crop_box=crop_box
     )
 
 def invalid_args():
     return jsonify({
-        "success": False,
-        "error": "INVALID_PARAMETERS"
-    }), 400
+        'success': False,
+        'error': 'Invalid arguments.'
+    })
 
 def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
@@ -92,7 +94,7 @@ def create_app(test_config=None):
             timer = Timer()
 
             timer.start_timer('Image Reading')
-            img = try_read_image_from_url(url)
+            img = try_read_image(url)
             timer.end_timer()
 
             if crop_box:
@@ -137,12 +139,12 @@ def create_app(test_config=None):
                 }
             })
 
-        except (Exception) as e:
-            app.logger.error(e)
+        except Exception as e:
+            app.logger.error(str(e))
             return jsonify({
-                "success": False,
-                "error": "INTERNAL_SERVER_ERROR"
-            }), 500
+                'success': False,
+                'error': str(e)
+            })
 
     @app.route('/health', methods = ['GET'])
     def healthcheck():
