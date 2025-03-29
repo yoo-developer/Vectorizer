@@ -7,11 +7,15 @@ RUN apt-get update -y && apt-get install -y \
     build-essential \
     python3-dev \
     libagg-dev \
+    libcairo2 \
+    libcairo2-dev \
     libpotrace-dev \
     pkg-config \
     libgl1 \
+    libffi-dev \
     --no-install-recommends && \
     rm -rf /var/lib/apt/lists/*
+
 
 # Create a non-root user and group with specific IDs for consistency
 RUN addgroup --gid 1001 appuser && \
